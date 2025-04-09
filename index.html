@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To Neha</title>
+    <!-- Load Google Fonts properly -->
+    <link href="https://fonts.googleapis.com/css2?family=Tangerine:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #1a1a1a;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 1.5s ease;
+        }
+        
+        .container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+        
+        /* Desk styling */
+        .desk {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            background-image: url('letter.PNG');
+            background-size: cover;
+            background-position: center;
+            filter: brightness(0.7) sepia(0.3);
+        }
+        
+        /* Envelope styling */
+        .envelope {
+            width: 300px;
+            height: 200px;
+            background-color: #e0c9a6;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(15deg);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.5s ease, box-shadow 0.5s ease;
+        }
+        
+        .envelope:hover {
+            transform: rotateX(15deg) translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+        
+        .envelope::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #d4b995;
+            clip-path: polygon(50% 0, 100% 50%, 100% 100%, 0 100%, 0 50%);
+        }
+        
+        .wax-seal {
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(#8b0000, #5c0000);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        
+        .wax-seal::after {
+            content: 'N'; 
+            color: #d4b995;
+            font-size: 30px;
+            font-family: 'Tangerine';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Letter styling */
+        .letter-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+        
+        .letter {
+            width: 80%;
+            max-width: 700px;
+            height: 80%;
+            background-image: url('paper.PNG');
+            background-size: cover;
+            padding: 40px;
+            font-family: 'Georgia', serif;
+            font-size: 18px;
+            line-height: 1.8;
+            color: #333;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+        }
+        
+        .letter-content {
+            margin-bottom: 40px;
+            height: 80%;
+        }
+        
+        .signature {
+            font-family: 'Tangerine';
+            font-size: 40px;
+            color: #333;
+            margin-top: 30px;
+            display: inline-block;
+        }
+        
+        /* Audio controls */
+        .audio-controls {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 30;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .envelope {
+                width: 250px;
+                height: 150px;
+            }
+            
+            .letter {
+                width: 95%;
+                padding: 20px;
+                font-size: 16px;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes signatureWrite {
+            to { transform: scaleX(1); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="desk"></div>
+        <div class="envelope" id="envelope">
+            <div class="wax-seal" id="waxSeal"></div>
+        </div>
+    </div>
+    
+    <div class="letter-container" id="letterContainer">
+        <div class="letter">
+            <div class="letter-content" id="letterContent"></div>
+        </div>
+    </div>
+    
+    <div class="audio-controls" id="audioControls">
+        <span id="audioIcon">🔊</span>
+    </div>
+    
+    <script>
+        // Elements
+        const envelope = document.getElementById('envelope');
+const waxSeal = document.getElementById('waxSeal');
+const letterContainer = document.getElementById('letterContainer');
+const letterContent = document.getElementById('letterContent');
+const audioControls = document.getElementById('audioControls');
+const audioIcon = document.getElementById('audioIcon');
+
+// Letter content - Your personal message
+const message = `Dear Neha,
+
+I don't even know how to start this letter because there's so much I want to say, yet words feel so small compared to what I feel inside. 
+I know you're moving away, and even though we haven't been in touch for a long time, I couldn't just let you go without telling you what's in my heart.
+We both know things didn't end well between us. Life happened, misunderstandings built up, and somehow, we drifted apart. But despite everything, I want you to know one truth, you were the most special one. And after you, I never found another best friend, nor did I ever call anyone that again.
+And believe it or not, You were the last person I truly opened my heart to, and after you, I never let anyone in the same way.
+Meeting you again after all this time, twice, felt… strange. I don't know why, but I felt so shy and awkward, like there was this invisible wall between us, and I couldn't figure out how to break it. Maybe it was the weight of the past, or maybe it was just the realization of how much time had changed things. I really don't know what that feeling was. But even in that awkwardness, a part of me was just happy to see you again.
+And now, you're leaving, moving to another country, to a new life. And while a part of me feels this deep sadness knowing you'll be so far away, another part of me is happy for you. You deserve all the happiness, success, and beautiful moments that life has to offer.
+I don't know if you still think of me, but I want you to know that I miss you. Not just the old times, but you. And while life has taken us on different paths, I will always wish you the best. I hope this new chapter of your life brings you all the happiness and success you deserve. I know things between us can never be the same as they once were, and maybe they're not meant to be, but this was all in my heart, and I just wanted you to know.
+
+With all my heart,
+Ramisha`;
+
+// Create audio elements properly with preloading
+const paperSound = new Audio();
+paperSound.src = 'sound1.mp3';
+paperSound.preload = 'auto';
+
+const backgroundMusic = new Audio();
+backgroundMusic.src = 'dearfriend.mp3'; // Changed to dearfriend.mp3
+backgroundMusic.preload = 'auto';
+
+// Typewriter effect function without sound
+function typeWriter(text, element, speed = 100) {
+    let i = 0;
+    element.innerHTML = '';
+    let typingInterval;
+    
+    function type() {
+        if (i < text.length) {
+            if (text.charAt(i) === '\n') {
+                element.innerHTML += '<br>';
+            } else {
+                element.innerHTML += text.charAt(i);
+            }
+            i++;
+            
+            // Add signature at the end
+            if (i === text.length) {
+                // Last character typed, add signature
+                setTimeout(() => {
+                    // Scroll to the bottom to show signature
+                    element.parentNode.scrollTop = element.parentNode.scrollHeight;
+                }, 500);
+            }
+        } else {
+            clearInterval(typingInterval);
+        }
+    }
+    
+    // Start the typing with a controlled speed
+    typingInterval = setInterval(type, speed);
+    
+    // Return a function that can stop the typing
+    return function stopTyping() {
+        clearInterval(typingInterval);
+    };
+}
+
+let stopTypingFunction = null;
+
+// Event Listeners
+envelope.addEventListener('click', () => {
+    // Play paper sound
+    paperSound.play().catch(e => console.log("Paper sound error:", e));
+    
+    letterContainer.style.display = 'flex';
+    letterContainer.style.animation = 'fadeIn 1.5s forwards';
+    document.body.style.backgroundColor = '#000';
+    
+    // Start typewriter effect
+    setTimeout(() => {
+        stopTypingFunction = typeWriter(message, letterContent, 50); // Adjust speed here
+    }, 1000);
+    
+    // Play background music
+    backgroundMusic.play().catch(e => console.log("Background music error:", e));
+    
+    // Remove audio controls since we don't need mute functionality anymore
+    if (audioControls) {
+        audioControls.style.display = 'none';
+    }
+});
+
+// Make wax seal just prevent the envelope from opening (no hidden message now)
+waxSeal.addEventListener('click', (e) => {
+    e.stopPropagation();
+});
+
+// Add hover animation to envelope
+envelope.style.animation = 'pulse 2s infinite';
+
+// Allow escape key to close the letter
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && letterContainer.style.display === 'flex') {
+        letterContainer.style.display = 'none';
+        document.body.style.backgroundColor = '#1a1a1a';
+        if (stopTypingFunction) {
+            stopTypingFunction();
+        }
+        backgroundMusic.pause();
+    }
+});
+
+// Also allow clicking outside the letter to close it
+letterContainer.addEventListener('click', (e) => {
+    if (e.target === letterContainer) {
+        letterContainer.style.display = 'none';
+        document.body.style.backgroundColor = '#1a1a1a';
+        if (stopTypingFunction) {
+            stopTypingFunction();
+        }
+        backgroundMusic.pause();
+    }
+});
+    </script>
+</body>
+</html>
